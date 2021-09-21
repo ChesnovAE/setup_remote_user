@@ -1,0 +1,31 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+    - vars/default.yml
+ 
+  tasks:
+    - name: Install prerequisites
+      apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+      
+    - name: Create user
+      user:
+        name: "{{ user }}"
+        password: "{{ lookup('env', 'REMOTE_USER_PASSWORD') }}"
+        state: present
+        groups: sudo
+        append: true
+        create_home: true
+        shell: /bin/bash
+      
+    - name: Set authorized key from file
+      authorized_key:
+        user: "{{ user }}"
+        state: present
+        key: "{{ lookup('file', lookup('env', 'CURRENT_KEY_NAME')) }}"
+ 
+    - name: Update packages
+      apt: update_cache=yes
+    
+    - name: Install packages
+      apt: name={{ sys_packages }} state=latest
