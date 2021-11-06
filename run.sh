@@ -1,5 +1,9 @@
 #!/bin/bash
-
+# TODO: add mac os install
+# TODO: add docker install with ansible
+# TODO: add gitlab-runner install with ansible
+# TODO: add nvim install from my repo
+# TODO: add arguments for packages
 
 ############# CONSTANTS  ############# 
 BLACK='\033[30m'       # Black
@@ -13,7 +17,16 @@ WHITE='\033[37m'       # White
 NC='\033[0m'             # No color
 ############# END CONST ##############
 
-############################## FUNCTIONS BLOCK ############################## 
+############################## FUNCTIONS BLOCK ##############################
+
+check_prerequisites() {
+    if ! command -v pip3 &> /dev/null
+    then
+        echo -e "Please install ${BLUE}pip3${NC} for python3"
+        exit 1
+    fi
+}
+
 proof_state() {
     local yn=$(echo "$1" | tr '[:upper:]' '[:lower:]')
     if [[ -z "$yn" ]]
@@ -33,15 +46,26 @@ install_prerequisites() {
     then
         echo -e "${BLUE}Install prerequisites${NC}"
         echo "-----------"    
-
-        sudo apt-get update &> /dev/null
-        
+		if [[ $(uname -s) == "Linux" ]]
+		then
+        	sudo apt-get update
+		fi
         ######## Install ansible ########
         if ! command -v ansible &> /dev/null
         then
             echo -e "${BLUE}Install ansible${NC}"
-            sudo apt install -y ansible
-            echo -e "${CYAN}ansible ${GREEN}successfully installed${NC}"
+			if [[ $(uname -s) == "Linux" ]]
+			then
+				sudo apt install -y ansible
+			fi
+			if [[ $(uname -s) == "Darwin" ]]
+			then
+				pip3 install ansible
+			else
+				echo -e "${RED}Can't install lib ansible${NC}"
+				exit 1
+			fi
+			echo -e "${CYAN}ansible ${GREEN}successfully installed${NC}"
         else
             echo -e "${CYAN}ansible ${GREEN}already installed${NC}"
         fi
@@ -50,8 +74,25 @@ install_prerequisites() {
         if ! command -v sshpass &> /dev/null
         then
             echo -e "${BLUE}Install sshpass${NC}"
-            sudo apt install -y sshpass &> /dev/null
-            echo -e "${CYAN}sshpass ${GREEN}successfully installed${NC}"
+			if [[ $(uname -s) == "Linux" ]]
+			then
+				sudo apt install -y sshpass
+            fi
+            if [[ $(uname -s) == 'Darwin' ]]
+            then
+                curl -O -L -k  https://sourceforge.net/projects/sshpass/files/sshpass/1.06/sshpass-1.06.tar.gz \
+                     && tar xvzf sshpass-1.06.tar.gz \
+                     && cd sshpass-1.06 \
+                     && ./configure \
+                echo -e "${BLUE}Enter sudo password for sshpass install${NC}"
+                sudo make install \
+                     && cd ../ \
+                     && rm -rf sshpass-1.06 sshpass-1.06.tar.gz
+			else
+				echo -e "${RED}Can't install lib sshpass${NC}"
+				exit 1
+			fi
+			echo -e "${CYAN}sshpass ${GREEN}successfully installed${NC}"
         else
             echo -e "${CYAN}sshpass ${GREEN}already installed${NC}"
         fi
@@ -112,6 +153,7 @@ run_ansible() {
 ############################### MAIN BLOCK ################################ 
 set -e
 
+check_prerequisites
 install_prerequisites
 create_ssh_key_pair
 run_ansible
