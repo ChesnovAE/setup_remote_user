@@ -29,3 +29,24 @@
     
     - name: Install packages
       apt: name={{ sys_packages }} state=latest
+
+    - name: install Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: install APT Transport HTTPS
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+        state: present
+        update_cache: yes
+
+    - name: install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes

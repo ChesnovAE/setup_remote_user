@@ -1,10 +1,8 @@
 #!/bin/bash
 # TODO: add mac os install
-# TODO: add docker install with ansible
 # TODO: add gitlab-runner install with ansible
 # TODO: add nvim install from my repo
 # TODO: add arguments for packages
-
 ############# CONSTANTS  ############# 
 BLACK='\033[30m'       # Black
 RED='\033[31m'         # Red
